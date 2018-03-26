@@ -1,0 +1,1 @@
+3) given an infinite chessboard with a knight in the middle, return the minimum number of moves to a given coordinate

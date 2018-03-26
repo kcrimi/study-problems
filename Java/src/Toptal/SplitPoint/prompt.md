@@ -1,0 +1,1 @@
+1) for a given array A of integers and integer X, find a splitting point so that you form 2 sub arrays. There should be the same number of integers == X to the left of the splitting point as there are occurrences of integers != X to the right

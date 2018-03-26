@@ -1,0 +1,1 @@
+2) given an integer, return a string binary representation with -2 as the base (instead of the typical base of 2)
