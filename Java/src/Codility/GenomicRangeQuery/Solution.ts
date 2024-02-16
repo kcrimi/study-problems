@@ -21,4 +21,18 @@ function solution(S: string, P: number[], Q: number[]): number[] {
     })
 }
 
-
+function solution(S: string, P: number[], Q: number[]): number[] {
+    return P.map((p, i) => {
+        let q = Q[i]
+        let min = 4
+        const strain = S.substring(p, q+1)
+        if (strain.includes('A')){
+            return 1
+        } else if (strain.includes('C')) {
+            return 2
+        } else if (strain.includes('G')){
+            return 3
+        }
+        return 4
+    })
+}
