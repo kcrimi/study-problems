@@ -1,57 +1,36 @@
-function solution(K: number, M: number, A: number[]): number {
-    const split = Math.floor(A.length / 3)
-    const left = A.slice(0, split)
-    const middle = A.slice(split, split*2)
-    const right = A.slice(split*2)
-    var leftSum = left.reduce((prev, val) => prev+val, 0)
-    var midSum = middle.reduce((prev, val) => prev+val, 0)
-    var rightSum = right.reduce((prev, val) => prev+val, 0)
-    var finished = 0
+// you can write to stdout for debugging purposes, e.g.
+// console.log('this is a debug message');
 
-    // console.log({left, middle, right})
-    // console.log({leftSum, midSum, rightSum})
-    while (finished == 0) {
-        const largeSum = Math.max(leftSum, midSum, rightSum)
-        let newLeftSum = leftSum
-        let newMidSum = midSum
-        let newRightSum = rightSum
-        if (leftSum == largeSum) {
-            let moving = left.pop()
-            middle.unshift(moving)
-            newLeftSum -= moving
-            newMidSum += moving
-        } else if(rightSum == largeSum){
-            let moving = right.shift()
-            middle.push(moving)
-            newRightSum -= moving
-            newMidSum += moving
-        }
-        // console.log({left, middle, right})
-        // console.log({leftSum, midSum, rightSum}, {newLeftSum, newMidSum, newRightSum}, largeSum)
-        if (newMidSum > largeSum) {
-            let newLargeSum = Math.max(newLeftSum, newMidSum, newRightSum)
-            let toLeftLargeSum = Math.max(newLeftSum+middle[0], newMidSum - middle[0], rightSum)
-            let toRightLargeSum = Math.max(newLeftSum, newMidSum-middle[middle.length-1],newRightSum+middle[middle.length-1])
-            if (toLeftLargeSum < newLargeSum) {
-                let moving = middle.shift()
-                left.push(moving)
-                newLeftSum += moving
-                newMidSum -= moving
-            } else if (toRightLargeSum < newLargeSum) {
-                let moving = middle.pop()
-                right.unshift(moving)
-                newRightSum += moving
-                newMidSum -= moving
+function solution(K: number, M: number, A: number[]): number {
+    var upperBound = M * A.length
+    var lowerBound = 0
+    var minLargeSum = upperBound
+    while (upperBound > lowerBound) {
+        const midpoint = Math.ceil((upperBound + lowerBound) / 2)
+        // console.log ({upperBound, lowerBound, midpoint})
+        // Check if can make make true with K blocks
+        var blocks = 1
+        var currentBlock = 0
+        let tooLow = false
+        for (let i = 0; i < A.length; i++) {
+            if (currentBlock + A[i] > midpoint){
+                blocks++
+                if (blocks > K || A[i] > midpoint) {
+                    // sum too low, need too many blocks
+                    lowerBound = midpoint +1
+                    tooLow = true
+                    break
+                }
+                currentBlock = A[i]
             } else {
-                break;
+                currentBlock += A[i]
             }
         }
-        leftSum = newLeftSum
-        midSum = newMidSum
-        rightSum = newRightSum
-        const newLargeSum = Math.max(leftSum, midSum, rightSum)
-        // console.log({leftSum, midSum, rightSum}, newLargeSum)
-        if (newLargeSum == largeSum) finished = 1
+        if (!tooLow && blocks <= K) { 
+            minLargeSum = midpoint
+            upperBound = midpoint-1
+        }
+        // console.log ({upperBound, lowerBound, midpoint})
     }
-    return Math.max(leftSum, midSum, rightSum)
+    return minLargeSum
 }
