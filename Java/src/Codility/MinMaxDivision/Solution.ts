@@ -6,7 +6,7 @@ function solution(K: number, M: number, A: number[]): number {
     var lowerBound = Math.max(...A)
     var minLargeSum = upperBound
     // console.log ({upperBound, lowerBound, minLargeSum})
-    while (upperBound > lowerBound) {
+    while (upperBound >= lowerBound) {
         const midpoint = Math.floor((upperBound + lowerBound) / 2)
         // Check if can make make true with K blocks
         var blocks = 1
