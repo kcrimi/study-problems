@@ -3,7 +3,7 @@
 
 function solution(K: number, M: number, A: number[]): number {
     var upperBound = M * A.length
-    var lowerBound = Math.min(...A)
+    var lowerBound = Math.max(...A)
     var minLargeSum = upperBound
     // console.log ({upperBound, lowerBound, minLargeSum})
     while (upperBound > lowerBound) {
