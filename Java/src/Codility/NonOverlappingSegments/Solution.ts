@@ -1,3 +1,4 @@
+//timeout on large points
 function solution(A: number[], B: number[]): number {
     var maxSegments = 0
     var first = 0
