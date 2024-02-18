@@ -16,3 +16,16 @@ function solution(A: number[], B: number[]): number {
     }
     return maxSegments
 }
+
+//Simplified, O(n)
+function solution(A: number[], B: number[]): number {
+    var maxSegments = 0
+    var currentEnd = -1
+    for (let i = 0; i < A.length; i++) {
+        if (A[i] > currentEnd) {
+            maxSegments++
+            currentEnd = B[i]
+        }
+    }
+    return maxSegments
+}
