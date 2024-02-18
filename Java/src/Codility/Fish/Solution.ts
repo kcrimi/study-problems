@@ -33,3 +33,21 @@ function solution(A: number[], B: number[]): number {
     }
     return survivors
 }
+
+// Using Stack
+function solution(A: number[], B: number[]): number {
+    // Implement your solution here
+    const downstreamStack = []
+    var survivors= 0
+    for (let i = 0; i < A.length; i++) {
+        if (B[i] == 0) {
+            while (downstreamStack.length > 0 && A[i] > downstreamStack[0]) {
+                downstreamStack.shift()
+            }
+            if (downstreamStack.length == 0) survivors++
+        } else {
+            downstreamStack.unshift(A[i])
+        }
+    }
+    return survivors + downstreamStack.length
+}
