@@ -43,3 +43,33 @@ function solution(A: number[]): number {
         }
     }, 0)
 }
+
+//Faster, no need for caterpillar
+function solution(A: number[]): number {
+    const counter = new Map<number, number>()
+    const leader = new Array(A.length-1)
+    const leaderCounts = new Array(A.length-1)
+    A.forEach((val, i) => {
+        const prevCount = counter.get(val) ?? 0
+        if (prevCount + 1 > (1 + i) / 2) {
+            leader[i] = val
+            leaderCounts[i] = prevCount + 1
+        } else if (leaderCounts[i-1] <= (1 + i) / 2) {
+            leader[i] = undefined
+            leaderCounts[i] = 0
+        } else {
+            leader[i] = leader[i-1]
+            leaderCounts[i] = leaderCounts[i-1]
+        }
+        counter.set(val, prevCount+1)
+    })
+    return leader.reduce((prev, val, i) => {
+        if (val != undefined) {
+            if (counter.get(val) - leaderCounts[i] > (A.length-1-i)/ 2){
+                return prev + 1
+            }
+        }
+        return prev
+    }, 0)
+}
+
