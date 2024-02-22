@@ -1,0 +1,199 @@
+# Codility
+const fs = require("fs");
+const Buffer = require("buffer");
+
+const getProcessedCSV = (fileName, delim) => {
+  const data = parseCSV(fileName, delim);
+  const deidentifiedData = new Map();
+  const parsedData = new Map();
+  var rowLen = 0;
+  // Rename rows?
+  data.forEach((rows, colName) => {
+    if (colName === "note") {
+      deidentifiedData.set(colName, rows);
+      return;
+    } else if (colName === "id") {
+      return;
+    }
+    parsedData.set(colName, []);
+    deidentifiedData.set(colName, []);
+    if (colName === "date_of_birth") {
+      rows.forEach((entry) => {
+        rowLen += 1; // move up to id
+        const [y, m, d] = parseDate(entry); 
+        parsedData.get(colName).push(y + m + d);
+        deidentifiedData.get(colName).push(yearToStr(y));
+      });
+    } else if (colName === "zip_code") {
+      rows.forEach((entry) => {
+        parsedData.get(colName).push(parseZip(entry));
+        deidentifiedData.get(colName).push(zipToStr(entry));
+      });
+    } else if (colName === "ssn") {
+      rows.forEach((entry) => {
+        parsedData.get(colName).push(parseSSN(entry));
+        deidentifiedData.get(colName).push("");
+      });
+    } else {
+      rows.forEach((entry) => {
+        parsedData.get(colName).push(entry);
+        deidentifiedData.get(colName).push("");
+      });
+    }
+  });
+
+  const fileParts = fileName.split("/");
+  const baseFileName = fileParts[fileParts.length - 1];
+
+  const processedData = [];
+  for (var i = 0; i < rowLen; i++) {
+    const processedRow = [];
+    const parsedRow = [];
+
+    deidentifiedData.forEach((row) => processedRow.push(row[i]));
+    parsedData.forEach((row) => parsedRow.push(row[i]));
+
+    processedRow.unshift(encrypt(baseFileName, parsedRow));
+    processedData.push(processedRow);
+  }
+
+  const header = Array.from(deidentifiedData.keys());
+  header.unshift("token");
+  processedData.unshift(header);
+
+  return processedData;
+};
+
+const parseCSV = (fileName, delim) => {
+  const result = new Array()
+  delim = delim ?? ","
+
+  try {
+    const rawData = fs.readFileSync(fileName, "utf8");
+    const data = rawData.trim().split("\n");
+    const colNames = data[0].split(delim);
+    const rows = data.slice(1);
+
+    colNames.forEach((colName) => {
+      result.push([colName]);
+    });
+
+    rows.forEach((row) => {
+      row.split(delim).forEach((val, i) => {
+        result.get(colNames[i]).push(val);
+      });
+    });
+    return result;
+  } catch (err) {
+    console.error(err);
+    return;
+  }
+};
+
+const parseDate = (dateStr) => {
+  try {
+    // You can take the regex here to be correct.
+    const dateFormatRegex = /^(\d{1,2}\/\d{1,2}\/\d{4}|\d{4}-\d{1,2}-\d{1,2}|\d{8})$/;
+
+    if (!dateFormatRegex.test(dateStr)) {
+      throw "Improperly formatted date";
+    }
+
+    if (dateStr.includes("/")) {
+      const dateArr = dateStr.split("/");
+      return [dateArr[2], dateArr[0], dateArr[1]];
+    } else if (dateStr.includes("-")) {
+      const dateArr = dateStr.split("-");
+      return [dateArr[0], dateArr[1], dateArr[2]];
+    } else (dateStr.length == 8) {
+      let currentDate = new Date()
+      let year = dateStr.slice(0, 4)
+      let month = dateStr.slice(4, 6)
+      let day = dateStr.slice(6)
+      if (currentDate.getFullYear < year
+        || month > 12
+        || day > 31
+        ) {
+        throw Error('Bad date')
+      }
+      return [year, month, day];
+    }
+  } catch (error) {
+    throw "Cannot parse date";
+  }
+};
+
+const yearToStr = (year) => {
+  return "01/01/" + year;
+};
+
+const parseZip = (zipStr) => {
+  const splitZip = zipStr.split("-");
+  return splitZip[0];
+};
+
+const zipToStr = (zip) => {
+  return zip.slice(0, 3);
+};
+
+const parseSSN = (ssnStr) => {
+  return ssnStr.replace("-", "");
+};
+
+// This function is bug free.
+const encrypt = (fileName, data) => {
+  const rawStr = data.join("+");
+  let encodedChars = [];
+  for (var i = 0; i < rawStr.length; i++) {
+    const c = rawStr.charCodeAt(i);
+    const k = fileName.charCodeAt(i % fileName.length);
+    encodedChars.push(String.fromCharCode((c + k) % 256));
+  }
+  return Buffer.Buffer.from(encodedChars.join("")).toString("base64url");
+};
+
+// Test, DO NOT EDIT PAST THIS LINE
+const fileName = "/home/coderpad/data/datavant_phi_in.csv";
+const EXPECTED_ROW_NUM = 4;
+const EXPECTED_COL_NUM = 7;
+const EXPECTED_DATA = [
+  ["token","first_name","date_of_birth","zip_code","ssn","email","note",],
+  ["wqXDjcOdw4TDm8KMwp_CrcKYwqDCmMKewpHCoMKZX8KTwqPCpsKVwozCpcKTwqnClcKjwqHClcKnwqDCosKKw4rDmsKXw4bDmMK2w4nDmcOVw47DpsONw5PCosOCw5_DlQ","","01/01/1990","100","","","went to pharmacy A"],
+  ["wqbDkMOWwozCp8KawqfCpMKPwqXCmsKgworCmsKeXsKTwqTCocKVwpPCp8KVwqvCl8KlwqzCmMKbw4rDmMOBwqnDk8Kmw4TDoMOmw5DDhsKiw4TDpcOO","","01/01/1990","100","","","went to pharmacy B"],
+  ["wqfDicOVw5PDosOKw5PCn8KQwqnCocKZwo_CnsKgZcKOwqTCpsKUwpHCpsKMwqfCk8KhwqjClMKdwp7CoMKXwqLCmcKRw4vDlMOow5DDisOZwqHDm8OZw4_DocOPw5zDjcKXw4LDmMOb","","01/01/1990","100","","","went to pharmacy C"],
+];
+
+const testLength = () => {
+  const result = getProcessedCSV(fileName, "|");
+
+  if (result.length != EXPECTED_ROW_NUM) {
+    console.log("ERROR: Wrong Number of Rows");
+  }
+
+  for (let i = 0; i < result.length; i++) {
+    if (result[i].length != EXPECTED_COL_NUM) {
+      console.log("ERROR: Wrong Number of Elements in Row", i);
+    }
+  }
+};
+
+const testContent = () => {
+  const result = getProcessedCSV(fileName, "|");
+
+  for (let i = 0; i < result.length; i++) {
+    const expectedRow = EXPECTED_DATA[i];
+    const resultRow = result[i];
+    for (let j = 0; j < resultRow.length; j++) {
+      const expectedElem = expectedRow[j];
+      const resultElem = resultRow[j];
+      if (expectedElem != resultElem) {
+        console.log(
+          "ERROR: Row", i, "Column", j, "\nExpecting:", expectedElem, "\nGot:", resultElem, "\n"
+        );
+      }
+    }
+  }
+};
+
+testLength();
+testContent();
