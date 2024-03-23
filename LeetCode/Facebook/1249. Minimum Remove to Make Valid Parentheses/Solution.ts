@@ -29,3 +29,24 @@ function minRemoveToMakeValid(s: string): string {
     }
     return rightString
 };
+
+// Instead using array to delete
+function minRemoveToMakeValid(s: string): string {
+    const chars = s.split("")
+    const lefts = []
+    for (let i = 0; i < chars.length; i++) {
+        if (chars[i] == "(") {
+            lefts.push(i)
+        } else if (chars[i] == ")") {
+            if (lefts.length > 0) {
+                lefts.pop()
+            } else {
+                chars[i] = null
+            }
+        }
+    }
+    for (let i of lefts) {
+        chars[i] = null
+    }
+    return chars.filter((char) => char != null).join("")
+};
