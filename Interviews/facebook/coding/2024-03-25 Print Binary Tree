@@ -1,0 +1,58 @@
+/*
+aI = 3
+bI = 3
+cI = 2 
+output = [0]
+*/
+
+/*
+      6
+     / \
+    3   4
+   /   / \
+  5   1   0
+   \     /
+    2   8
+   / \
+  9   7
+
+5 9 3 2 6 1 7 4 8 0
+*/
+Node
+  left 
+  right
+  val
+
+function printNode(node:Node | null) : number[] {
+  if (node == null) return []
+  const left = printNode(node.left)
+  const right = printNode(node.right)
+  return [...left, node.val, ...right]
+}
+[ 5 9 2 7 3 6 1 4 8 0]
+
+var columns = new Map<number, Array<number>>()
+function Solution(node: Node | null) : number[] {
+  columns = new Map<number, Array<number>>()
+  if (node == null) return []
+  exploreNode(node, 0)
+  const minKey = Math.min(columns.keys())
+
+  const output = []
+  let key = minKey
+  while (columns.has(key)) {
+    output = output.concat(columns.get(key))
+    key++
+  }
+  return output
+}
+
+function exploreNode(node: Node | null, column) {
+  if (node == null) return 
+  if (!columns.has(column)) {
+    columns.set(column, [])
+  }
+  columns.get(column).push(node.val)
+  exploreNode(node.left, column-1)
+  exploreNode(node.right, column+1)
+}
